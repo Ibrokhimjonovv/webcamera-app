@@ -169,6 +169,7 @@
     color: #000;
     background-color: #fff;
     text-align: center;
+    margin-bottom: 5px;
   }
 }
 
@@ -676,5 +677,11 @@
 @media (min-width: 769px) {
   .switch-camera {
     display: none !important;
+  }
+}
+
+@media screen and (max-width: 500px) {
+  .filters-grid {
+    grid-template-columns: repeat(1, 1fr);
   }
 }
