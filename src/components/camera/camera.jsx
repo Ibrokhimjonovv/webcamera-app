@@ -31,7 +31,89 @@ const CameraComponent = ({ onClose }) => {
 
     // 80 ta turli effektlar
     const filters = [
-        // ... filters array (o'zgarmagan)
+        { name: 'Normal', value: 'none' },
+        { name: 'Sepia', value: 'sepia(1)' },
+        { name: 'Grayscale', value: 'grayscale(1)' },
+        { name: 'Invert', value: 'invert(1)' },
+        { name: 'Brightness', value: 'brightness(1.5)' },
+        { name: 'Contrast', value: 'contrast(2)' },
+        { name: 'Saturation', value: 'saturate(2)' },
+        { name: 'Hue Rotate', value: 'hue-rotate(90deg)' },
+        { name: 'Blur', value: 'blur(2px)' },
+        { name: 'Vintage', value: 'sepia(0.5) contrast(1.2) brightness(0.9)' },
+        { name: 'Warm', value: 'sepia(0.3) saturate(1.5) hue-rotate(-10deg)' },
+        { name: 'Cool', value: 'sepia(0.1) saturate(1.2) hue-rotate(180deg) brightness(1.1)' },
+        { name: 'Dramatic', value: 'contrast(2) brightness(0.8) saturate(1.5)' },
+        { name: 'Soft', value: 'contrast(1.2) brightness(1.1) saturate(0.8)' },
+        { name: 'Noir', value: 'grayscale(1) contrast(2) brightness(0.7)' },
+        { name: 'Sunset', value: 'sepia(0.4) saturate(1.6) hue-rotate(-30deg)' },
+        { name: 'Ocean', value: 'hue-rotate(180deg) saturate(1.3)' },
+        { name: 'Forest', value: 'hue-rotate(120deg) saturate(1.4)' },
+        { name: 'Vibrant', value: 'saturate(2) contrast(1.3)' },
+        { name: 'Pastel', value: 'saturate(0.6) brightness(1.2)' },
+        { name: 'Mono', value: 'grayscale(1) contrast(1.5)' },
+        { name: 'High Contrast', value: 'contrast(3)' },
+        { name: 'Low Contrast', value: 'contrast(0.7)' },
+        { name: 'Warm Vintage', value: 'sepia(0.7) hue-rotate(-20deg) saturate(1.3)' },
+        { name: 'Cool Vintage', value: 'sepia(0.5) hue-rotate(200deg) saturate(1.2)' },
+        { name: 'Dreamy', value: 'blur(1px) brightness(1.1) saturate(0.9)' },
+        { name: 'Sharp', value: 'contrast(1.7) saturate(1.3)' },
+        { name: 'Faded', value: 'contrast(0.8) brightness(1.1) saturate(0.7)' },
+        { name: 'Cinematic', value: 'contrast(1.4) brightness(0.9) saturate(1.1)' },
+        { name: 'Romantic', value: 'sepia(0.3) saturate(1.2) brightness(1.1)' },
+        { name: 'Mysterious', value: 'contrast(1.6) brightness(0.8) hue-rotate(270deg)' },
+        { name: 'Golden', value: 'sepia(0.4) saturate(1.5) hue-rotate(20deg)' },
+        { name: 'Silver', value: 'grayscale(0.8) contrast(1.4) brightness(1.1)' },
+        { name: 'Bronze', value: 'sepia(0.6) saturate(1.4) hue-rotate(30deg)' },
+        { name: 'Platinum', value: 'grayscale(0.6) contrast(1.3) brightness(1.2)' },
+        { name: 'Ruby', value: 'hue-rotate(330deg) saturate(1.6)' },
+        { name: 'Emerald', value: 'hue-rotate(140deg) saturate(1.5)' },
+        { name: 'Sapphire', value: 'hue-rotate(220deg) saturate(1.4)' },
+        { name: 'Amethyst', value: 'hue-rotate(280deg) saturate(1.5)' },
+        { name: 'Topaz', value: 'hue-rotate(45deg) saturate(1.3)' },
+        { name: 'Sunrise', value: 'sepia(0.3) hue-rotate(-45deg) saturate(1.4)' },
+        { name: 'Sunset Glow', value: 'sepia(0.5) hue-rotate(45deg) saturate(1.6)' },
+        { name: 'Twilight', value: 'hue-rotate(240deg) saturate(1.2) brightness(0.9)' },
+        { name: 'Moonlight', value: 'grayscale(0.3) hue-rotate(200deg) brightness(0.8)' },
+        { name: 'Aurora', value: 'hue-rotate(160deg) saturate(1.8)' },
+        { name: 'Fire', value: 'sepia(0.8) hue-rotate(-40deg) saturate(2)' },
+        { name: 'Ice', value: 'hue-rotate(180deg) saturate(0.5) brightness(1.3)' },
+        { name: 'Earth', value: 'sepia(0.6) hue-rotate(60deg) saturate(1.2)' },
+        { name: 'Sky', value: 'hue-rotate(210deg) saturate(1.3) brightness(1.1)' },
+        { name: 'Ocean Deep', value: 'hue-rotate(200deg) saturate(1.5) brightness(0.9)' },
+        { name: 'Forest Deep', value: 'hue-rotate(100deg) saturate(1.6) brightness(0.9)' },
+        { name: 'Desert', value: 'sepia(0.7) hue-rotate(30deg) saturate(1.3)' },
+        { name: 'Jungle', value: 'hue-rotate(130deg) saturate(1.7)' },
+        { name: 'Arctic', value: 'grayscale(0.5) hue-rotate(180deg) brightness(1.4)' },
+        { name: 'Tropical', value: 'hue-rotate(90deg) saturate(1.8)' },
+        { name: 'Retro', value: 'sepia(0.8) contrast(1.4) saturate(1.1)' },
+        { name: 'Modern', value: 'contrast(1.6) saturate(1.2) brightness(1.1)' },
+        { name: 'Futuristic', value: 'hue-rotate(270deg) saturate(1.4) contrast(1.8)' },
+        { name: 'Classic', value: 'sepia(0.4) contrast(1.3)' },
+        { name: 'Elegant', value: 'grayscale(0.2) contrast(1.2) brightness(1.1)' },
+        { name: 'Dramatic B&W', value: 'grayscale(1) contrast(2.5) brightness(0.8)' },
+        { name: 'Soft B&W', value: 'grayscale(1) contrast(1.2) brightness(1.2)' },
+        { name: 'High Key', value: 'brightness(1.8) contrast(1.1)' },
+        { name: 'Low Key', value: 'brightness(0.6) contrast(1.4)' },
+        { name: 'Silhouette', value: 'brightness(0.4) contrast(2)' },
+        { name: 'HDR', value: 'contrast(1.8) saturate(1.4) brightness(1.2)' },
+        { name: 'Matte', value: 'contrast(0.9) brightness(1.1) saturate(0.8)' },
+        { name: 'Glossy', value: 'contrast(1.5) brightness(1.3) saturate(1.2)' },
+        { name: 'Textured', value: 'contrast(1.4) brightness(0.9)' },
+        { name: 'Smooth', value: 'blur(0.5px) brightness(1.1)' },
+        { name: 'Grainy', value: 'contrast(1.3) brightness(0.95)' },
+        { name: 'Clean', value: 'contrast(1.2) brightness(1.15) saturate(0.9)' },
+        { name: 'Warm Clean', value: 'sepia(0.1) contrast(1.2) brightness(1.1)' },
+        { name: 'Cool Clean', value: 'hue-rotate(180deg) contrast(1.1) brightness(1.15)' },
+        { name: 'Neutral', value: 'contrast(1.1) brightness(1.05)' },
+        { name: 'Bold', value: 'contrast(1.8) saturate(1.6)' },
+        { name: 'Subtle', value: 'contrast(1.1) saturate(1.1)' },
+        { name: 'Rich', value: 'contrast(1.4) saturate(1.5) brightness(1.1)' },
+        { name: 'Muted', value: 'contrast(0.9) saturate(0.7) brightness(1.05)' },
+        { name: 'Vivid', value: 'saturate(2) contrast(1.3)' },
+        { name: 'Pastel Dream', value: 'saturate(0.5) brightness(1.3)' },
+        { name: 'Dark Fantasy', value: 'contrast(1.6) brightness(0.7) hue-rotate(300deg)' },
+        { name: 'Light Fantasy', value: 'contrast(1.2) brightness(1.4) hue-rotate(60deg)' }
     ];
 
     // Qurilma turini aniqlash
@@ -185,7 +267,7 @@ const CameraComponent = ({ onClose }) => {
                         video.removeEventListener('error', onError);
 
                         setIsLoading(false);
-                        setError('Video yuklashda xatolik');
+                        setError('Error loading video');
                         resolve();
                     };
 
@@ -218,9 +300,9 @@ const CameraComponent = ({ onClose }) => {
             } else if (err.name === 'NotFoundError') {
                 setError('Camera not found. Please check if your device has a camera.');
             } else if (err.name === 'NotSupportedError') {
-                setError('Brauzeringiz kamerani qoʻllab-quvvatlamaydi.');
+                setError('Your browser does not support the camera.');
             } else {
-                setError('Kamerani ochib boʻlmadi. Iltimos, qaytadan urinib koʻring.');
+                setError('The camera could not be opened. Please try again.');
             }
             setIsLoading(false);
         }
