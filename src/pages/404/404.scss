@@ -1,0 +1,37 @@
+.page-not-found {
+    background-image: radial-gradient(farthest-corner at center, #333 33%, #000 150%);
+    width: 100%;
+    min-height: 100vh;
+    max-height: 100vh;
+    height: 100%;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    position: relative;
+
+    h1 {
+        font-size: 80px;
+    }
+
+    p {
+        margin-top: 5px;
+    }
+
+    a {
+        color: #ff0090;
+        margin-top: 20px;
+
+        &:hover {
+            color: #e962ae;
+        }
+    }
+
+    span {
+        position: absolute;
+        bottom: 20px;
+        color: #888;
+        font-size: 500;
+    }
+}
