@@ -24,10 +24,8 @@ const CameraComponent = ({ onClose }) => {
     const [currentFilter, setCurrentFilter] = useState('none');
     const [showFilters, setShowFilters] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
-
-    // Audio refs
-    const shutterSoundRef = useRef(null);
-    const countdownSoundRef = useRef(null);
+    const [availableCameras, setAvailableCameras] = useState([]);
+    const [currentCameraIndex, setCurrentCameraIndex] = useState(0);
 
     // 80 ta turli effektlar
     const filters = [
@@ -131,63 +129,80 @@ const CameraComponent = ({ onClose }) => {
         };
     }, []);
 
-    // Audio elementlarini yaratish
-    useEffect(() => {
-        // Shutter sound
-        shutterSoundRef.current = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==");
-        
-        // Countdown sound
-        countdownSoundRef.current = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==");
-        
-        // Audio kontekstini ishga tushirish
-        const initAudio = async () => {
-            try {
-                // Shutter sound yaratish
-                const shutterContext = new (window.AudioContext || window.webkitAudioContext)();
-                const shutterOscillator = shutterContext.createOscillator();
-                const shutterGain = shutterContext.createGain();
-                
-                shutterOscillator.connect(shutterGain);
-                shutterGain.connect(shutterContext.destination);
-                
-                shutterOscillator.frequency.setValueAtTime(1000, shutterContext.currentTime);
-                shutterOscillator.type = 'sine';
-                shutterGain.gain.setValueAtTime(0.3, shutterContext.currentTime);
-                shutterGain.gain.exponentialRampToValueAtTime(0.01, shutterContext.currentTime + 0.1);
-                
-                shutterOscillator.start(shutterContext.currentTime);
-                shutterOscillator.stop(shutterContext.currentTime + 0.1);
-                
-            } catch (e) {
-                console.log('Audio init error:', e);
-            }
-        };
-        
-        initAudio();
-    }, []);
+    // Mavjud kameralarni olish
+    const getAvailableCameras = async () => {
+        try {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const videoDevices = devices.filter(device => device.kind === 'videoinput');
+            setAvailableCameras(videoDevices);
+            return videoDevices;
+        } catch (error) {
+            console.error('Kamerani olishda xatolik:', error);
+            return [];
+        }
+    };
 
-    // Shutter ovozini chalish
+    // Real kamera shutter ovozi
     const playShutterSound = () => {
         try {
             const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-
-            // Kamera shutter ovozi
-            oscillator.frequency.setValueAtTime(1200, audioContext.currentTime);
-            oscillator.frequency.exponentialRampToValueAtTime(800, audioContext.currentTime + 0.1);
-            oscillator.type = 'sine';
-
-            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
-
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.2);
+            
+            // Asosiy shutter ovozi
+            const oscillator1 = audioContext.createOscillator();
+            const gainNode1 = audioContext.createGain();
+            
+            oscillator1.connect(gainNode1);
+            gainNode1.connect(audioContext.destination);
+            
+            oscillator1.frequency.setValueAtTime(1000, audioContext.currentTime);
+            oscillator1.frequency.exponentialRampToValueAtTime(600, audioContext.currentTime + 0.1);
+            oscillator1.type = 'sine';
+            
+            gainNode1.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode1.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+            
+            // Ikkinchi ovoz (shutter yopilishi)
+            const oscillator2 = audioContext.createOscillator();
+            const gainNode2 = audioContext.createGain();
+            
+            oscillator2.connect(gainNode2);
+            gainNode2.connect(audioContext.destination);
+            
+            oscillator2.frequency.setValueAtTime(800, audioContext.currentTime + 0.1);
+            oscillator2.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.2);
+            oscillator2.type = 'sine';
+            
+            gainNode2.gain.setValueAtTime(0.2, audioContext.currentTime + 0.1);
+            gainNode2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+            
+            oscillator1.start(audioContext.currentTime);
+            oscillator1.stop(audioContext.currentTime + 0.15);
+            
+            oscillator2.start(audioContext.currentTime + 0.1);
+            oscillator2.stop(audioContext.currentTime + 0.2);
+            
         } catch (e) {
             console.log('Shutter sound error:', e);
+            // Fallback: oddiy bip ovozi
+            try {
+                const fallbackContext = new (window.AudioContext || window.webkitAudioContext)();
+                const fallbackOscillator = fallbackContext.createOscillator();
+                const fallbackGain = fallbackContext.createGain();
+                
+                fallbackOscillator.connect(fallbackGain);
+                fallbackGain.connect(fallbackContext.destination);
+                
+                fallbackOscillator.frequency.value = 800;
+                fallbackOscillator.type = 'sine';
+                
+                fallbackGain.gain.setValueAtTime(0.3, fallbackContext.currentTime);
+                fallbackGain.gain.exponentialRampToValueAtTime(0.01, fallbackContext.currentTime + 0.1);
+                
+                fallbackOscillator.start(fallbackContext.currentTime);
+                fallbackOscillator.stop(fallbackContext.currentTime + 0.1);
+            } catch (fallbackError) {
+                console.log('Fallback sound error:', fallbackError);
+            }
         }
     };
 
@@ -201,22 +216,22 @@ const CameraComponent = ({ onClose }) => {
             oscillator.connect(gainNode);
             gainNode.connect(audioContext.destination);
 
-            // Countdown ovozi
-            oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+            // Countdown ovozi - qisqa va aniq
+            oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
             oscillator.type = 'sine';
 
             gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
 
             oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.3);
+            oscillator.stop(audioContext.currentTime + 0.1);
         } catch (e) {
             console.log('Countdown sound error:', e);
         }
     };
 
-    // Kamerani ochish funksiyasi
-    const startCamera = async () => {
+    // Kamerani ochish funksiyasi - YANGILANGAN
+    const startCamera = async (deviceId = null) => {
         try {
             setIsLoading(true);
             setError(null);
@@ -227,12 +242,16 @@ const CameraComponent = ({ onClose }) => {
                 setStream(null);
             }
 
-            const mediaStream = await navigator.mediaDevices.getUserMedia({
+            const constraints = {
                 video: {
-                    facingMode: facingMode
+                    width: { ideal: 1920 },
+                    height: { ideal: 1080 },
+                    facingMode: deviceId ? undefined : facingMode,
+                    deviceId: deviceId ? { exact: deviceId } : undefined
                 }
-            });
+            };
 
+            const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
             setStream(mediaStream);
 
             if (videoRef.current) {
@@ -279,7 +298,8 @@ const CameraComponent = ({ onClose }) => {
                     video.addEventListener('canplay', onCanPlay);
                     video.addEventListener('error', onError);
 
-                    setTimeout(() => {
+                    // Timeout fallback
+                    const timeoutId = setTimeout(() => {
                         video.removeEventListener('loadedmetadata', onLoaded);
                         video.removeEventListener('canplay', onCanPlay);
                         video.removeEventListener('error', onError);
@@ -289,22 +309,57 @@ const CameraComponent = ({ onClose }) => {
                             applyVideoTransform();
                         }
                         resolve();
-                    }, 3000);
+                    }, 5000);
+
+                    // Cleanup timeout when video loads
+                    video.addEventListener('loadedmetadata', () => clearTimeout(timeoutId));
+                    video.addEventListener('canplay', () => clearTimeout(timeoutId));
                 });
             }
 
         } catch (err) {
             console.error('Kamera ochishda xatolik:', err);
+            let errorMessage = 'The camera could not be opened. Please try again.';
+            
             if (err.name === 'NotAllowedError') {
-                setError('Camera permission not granted. Please grant camera permission in your browser settings.');
+                errorMessage = 'Camera permission not granted. Please allow camera access in your browser settings.';
             } else if (err.name === 'NotFoundError') {
-                setError('Camera not found. Please check if your device has a camera.');
+                errorMessage = 'No camera found. Please check if your device has a camera.';
             } else if (err.name === 'NotSupportedError') {
-                setError('Your browser does not support the camera.');
-            } else {
-                setError('The camera could not be opened. Please try again.');
+                errorMessage = 'Your browser does not support camera access.';
+            } else if (err.name === 'OverconstrainedError') {
+                errorMessage = 'Camera constraints could not be satisfied. Trying alternative camera...';
+                // Alternative kamera urinishi
+                setTimeout(() => switchToNextCamera(), 1000);
+                return;
             }
+            
+            setError(errorMessage);
             setIsLoading(false);
+        }
+    };
+
+    // Keyingi kameraga o'tish
+    const switchToNextCamera = async () => {
+        try {
+            const cameras = await getAvailableCameras();
+            if (cameras.length <= 1) {
+                setError('Only one camera available');
+                return;
+            }
+
+            const nextIndex = (currentCameraIndex + 1) % cameras.length;
+            setCurrentCameraIndex(nextIndex);
+            
+            await startCamera(cameras[nextIndex].deviceId);
+            
+            // Yangi kamera turini aniqlash
+            const newFacingMode = nextIndex === 0 ? 'user' : 'environment';
+            setFacingMode(newFacingMode);
+            
+        } catch (error) {
+            console.error('Camera switch error:', error);
+            setError('Failed to switch camera');
         }
     };
 
@@ -338,7 +393,7 @@ const CameraComponent = ({ onClose }) => {
                         playCountdownSound();
                         capturePhotoFinal();
                         setIsCapturing(false);
-                    }, 1000);
+                    }, 500);
                     return 0;
                 }
 
@@ -350,14 +405,14 @@ const CameraComponent = ({ onClose }) => {
         }, 1000);
     };
 
-    // Flash effekti
+    // Flash effekti - faqat old kamerada ishlashi
     const triggerFlash = () => {
-        if (!flash) return;
+        if (!flash || facingMode === 'environment') return;
 
         setShowFlash(true);
         setTimeout(() => {
             setShowFlash(false);
-        }, 300);
+        }, 200);
     };
 
     // Yakuniy rasm olish
@@ -367,14 +422,14 @@ const CameraComponent = ({ onClose }) => {
             const canvas = canvasRef.current;
             const context = canvas.getContext('2d');
 
-            // Flash effektini ishga tushirish
+            // Flash effektini ishga tushirish (faqat old kamerada)
             triggerFlash();
 
-            // Shutter ovozini chalish
+            // Haqiqiy kamera shutter ovozi
             playShutterSound();
 
             if (video.videoWidth === 0 || video.videoHeight === 0) {
-                console.error('Video hali tayyor emas');
+                console.error('Video not ready');
                 return;
             }
 
@@ -445,22 +500,16 @@ const CameraComponent = ({ onClose }) => {
         }
     };
 
-    // Kamerani almashtirish - TO'G'RILANGAN VERSIYA
+    // Kamerani almashtirish - YANGILANGAN VERSIYA
     const switchCamera = async () => {
         try {
-            // Old va orqa kamera o'rtasida almashtirish
+            await switchToNextCamera();
+        } catch (error) {
+            console.error('Camera switch failed:', error);
+            // Fallback: oddiy facingMode o'zgartirish
             const newFacingMode = facingMode === 'user' ? 'environment' : 'user';
             setFacingMode(newFacingMode);
-            
-            // Kamerani qayta ishga tushirish
             await startCamera();
-        } catch (error) {
-            console.error('Kamera almashtirishda xatolik:', error);
-            // Agar orqa kamera mavjud bo'lmasa, old kameraga qaytish
-            if (facingMode === 'environment') {
-                setFacingMode('user');
-                await startCamera();
-            }
         }
     };
 
@@ -468,7 +517,7 @@ const CameraComponent = ({ onClose }) => {
     const downloadImage = () => {
         if (capturedImage) {
             const link = document.createElement('a');
-            link.download = `my-webcam-photo-${Date.now()}.png`;
+            link.download = `photo-${Date.now()}.png`;
             link.href = capturedImage;
             link.click();
         }
@@ -542,7 +591,12 @@ const CameraComponent = ({ onClose }) => {
 
     // Komponent yuklanganda kamerni ochish
     useEffect(() => {
-        startCamera();
+        const initializeCamera = async () => {
+            await getAvailableCameras();
+            await startCamera();
+        };
+        
+        initializeCamera();
 
         return () => {
             if (stream) {
@@ -570,20 +624,22 @@ const CameraComponent = ({ onClose }) => {
                 <div className="error-overlay">
                     <div className="error-message">
                         <div className="error-icon">⚠️</div>
-                        <h3>Camera not opening</h3>
+                        <h3>Camera Error</h3>
                         <p>{error}</p>
-                        <button
-                            className="retry-button"
-                            onClick={startCamera}
-                        >
-                            Retry
-                        </button>
-                        <button
-                            className="close-error-button"
-                            onClick={stopCamera}
-                        >
-                            Close
-                        </button>
+                        <div className="error-buttons">
+                            <button
+                                className="retry-button"
+                                onClick={startCamera}
+                            >
+                                Try Again
+                            </button>
+                            <button
+                                className="close-error-button"
+                                onClick={stopCamera}
+                            >
+                                Close
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -602,7 +658,7 @@ const CameraComponent = ({ onClose }) => {
                                 checked={mirror}
                                 onChange={(e) => setMirror(e.target.checked)}
                             />
-                            Mirror (Oyna)
+                            Mirror (Front camera only)
                         </label>
                     </div>
                     <div className="settings-item">
@@ -612,7 +668,7 @@ const CameraComponent = ({ onClose }) => {
                                 checked={square}
                                 onChange={(e) => setSquare(e.target.checked)}
                             />
-                            Square (Kvadrat)
+                            Square Mode
                         </label>
                     </div>
                     <div className="settings-item">
@@ -632,7 +688,7 @@ const CameraComponent = ({ onClose }) => {
                                 checked={flash}
                                 onChange={(e) => setFlash(e.target.checked)}
                             />
-                            Flash
+                            Screen Flash (Front camera only)
                         </label>
                     </div>
                     <div className="settings-item">
@@ -647,7 +703,7 @@ const CameraComponent = ({ onClose }) => {
                     </div>
 
                     <div className="settings-item back-settings-item" onClick={() => setShowSettings(!showSettings)}>
-                        Close
+                        Close Settings
                     </div>
                 </div>
             )}
@@ -659,6 +715,11 @@ const CameraComponent = ({ onClose }) => {
                             <button className="close-button" onClick={stopCamera}>
                                 ✕
                             </button>
+                            {isMobile && availableCameras.length > 1 && (
+                                <div className="camera-info">
+                                    Camera {currentCameraIndex + 1}/{availableCameras.length}
+                                </div>
+                            )}
                         </div>
                     )
                 }
@@ -691,7 +752,7 @@ const CameraComponent = ({ onClose }) => {
                             {isLoading && (
                                 <div className="loading-overlay">
                                     <div className="loading-spinner"></div>
-                                    <p>Camera is opening...</p>
+                                    <p>Initializing camera...</p>
                                 </div>
                             )}
                             {isCapturing && countdownValue > 0 && (
@@ -712,8 +773,12 @@ const CameraComponent = ({ onClose }) => {
                 {!isLoading && !isPreview && (
                     <div className="camera-controls">
                         {/* Kamerani almashtirish tugmasi */}
-                        {isMobile && (
-                            <button className="control-button switch-camera" onClick={switchCamera}>
+                        {isMobile && availableCameras.length > 1 && (
+                            <button 
+                                className="control-button switch-camera" 
+                                onClick={switchCamera}
+                                disabled={isLoading}
+                            >
                                 {facingMode === 'user' ? '📷' : '👤'}
                             </button>
                         )}
@@ -721,7 +786,7 @@ const CameraComponent = ({ onClose }) => {
                             className="settings-button"
                             onClick={() => setShowSettings(!showSettings)}
                         >
-                            <img src="https://webcamtoy.com/assets/images/gear.svg" alt="" />
+                            <img src="https://webcamtoy.com/assets/images/gear.svg" alt="Settings" />
                         </button>
                         <button
                             className="control-button capture-button"
@@ -757,7 +822,7 @@ const CameraComponent = ({ onClose }) => {
             {showFilters && !fullScreen && !isPreview && (
                 <div className="filters-menu">
                     <div className="close-filter" onClick={() => setShowFilters(!showFilters)}>
-                        Close
+                        Close Filters
                     </div>
                     <div className="filters-grid">
                         {filters.map((filter, index) => (
